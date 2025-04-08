@@ -2,12 +2,11 @@ const userschema = require("../model/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const { SigninMail, otPmailSend } = require("../utils/signinmail");
-const generateOTP = require("../utils/otpGenrate")
-
+const { SendMail, otPmailSend } = require("../utils/signinmail");
+const generateOTP = require("../utils/otpGenrate");
 
 exports.signin = async (req, res) => {
-  const { name, email, password, role} = req.body;
+  const { name, email, password, role } = req.body;
 
   if (!name || !email || !password || !role) {
     return res.status(400).json({
@@ -41,15 +40,14 @@ exports.signin = async (req, res) => {
       }
 
       const otp = generateOTP();
-    if (!otp) {
-      return res.status(500).json({
-        success: false,
-        message: "otp is not genrated",
-      });
-    }
-      
-     
-      const sendmail = otPmailSend(email, otp);
+      if (!otp) {
+        return res.status(500).json({
+          success: false,
+          message: "otp is not genrated",
+        });
+      }
+
+      const sendmail = SendMail(email, otp);
 
       if (!sendmail) {
         return res.status(503).json({
@@ -63,15 +61,13 @@ exports.signin = async (req, res) => {
         email,
         password: hashedpassword,
         role,
-        otp:otp,
+        otp: otp,
       });
 
-      
-        return res.status(200).json({
-          success: true,
-          message:
-            "Signin details are complately fillup,Go for otp verification",
-        });
+      return res.status(200).json({
+        success: true,
+        message: "Signin details are complately fillup,Go for otp verification",
+      });
     }
   } catch (error) {
     console.log(error);
@@ -85,7 +81,7 @@ exports.signin = async (req, res) => {
 
 exports.otpverification = async (req, res) => {
   try {
-    const { email,otp } = req.body;
+    const { email, otp } = req.body;
 
     const user = await userschema.findOne({ email }).select("-password");
     if (!user) {
@@ -118,22 +114,27 @@ exports.otpverification = async (req, res) => {
       user.isValid = true;
       user.save();
 
-      const mailsend = SigninMail(email);
+      const mailsend = SendMail(
+        email,
+        `<h1>Hi ${user.name},<h1>
+
+     <p> We're letting you know that you just signed in to your account on [E-commerce Website].</p>`,
+        `SignIn successfull`
+      );
 
       if (!mailsend) {
-          return res.status(400).json({
-            success: false,
-            message: "mail is not sended",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "mail is not sended",
+        });
       }
 
       return res.status(200).json({
         success: true,
-        data:user,
+        data: user,
         message: "signIn successfully",
       });
     }
-
   } catch (error) {
     console.log(error);
 
@@ -142,51 +143,50 @@ exports.otpverification = async (req, res) => {
       message: "Server Error",
     });
   }
-}
+};
 
 exports.sendOtp = async (req, res) => {
   try {
     const { email } = req.body;
-      const user = await userschema.findOne({ email });
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: "User not found",
-        });
+    const user = await userschema.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
-   
-  const otp = generateOTP();
-  if (!otp) {
-    return res.status(500).json({
-      success: false,
-      message: "otp is not genrated",
-    });
-  } else {
-    if (user.otp !== null) {
-      user.otp = otp;
-      user.otpCreatedAt = Date.now();
-      user.save();
+
+    const otp = generateOTP();
+    if (!otp) {
+      return res.status(500).json({
+        success: false,
+        message: "otp is not genrated",
+      });
     } else {
-      user.otp = otp;
-      user.otpCreatedAt = Date.now();
-      user.save();
-     }
-  }
-
-  const sendmail = otPmailSend(email, otp);
-
-  if (!sendmail) {
-    return res.status(503).json({
-      success: false,
-      message: "mail is not sended",
-    });
+      if (user.otp !== null) {
+        user.otp = otp;
+        user.otpCreatedAt = Date.now();
+        user.save();
+      } else {
+        user.otp = otp;
+        user.otpCreatedAt = Date.now();
+        user.save();
+      }
     }
-    
+
+    const sendmail = SendMail(email, `your otp is ${otp}`, `otp received`);
+
+    if (!sendmail) {
+      return res.status(503).json({
+        success: false,
+        message: "mail is not sended",
+      });
+    }
+
     return res.status(200).json({
       success: true,
-      message:"otp resend successfully"
-    })
-
+      message: "otp resend successfully",
+    });
   } catch (error) {
     console.log(error);
 
@@ -194,9 +194,8 @@ exports.sendOtp = async (req, res) => {
       success: false,
       message: "Server Error",
     });
-}
-
-}
+  }
+};
 
 exports.login = async (req, res) => {
   try {
