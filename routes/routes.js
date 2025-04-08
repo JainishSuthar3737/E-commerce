@@ -14,16 +14,16 @@ router.post("/sendOtp", sendOtp);
 router.post("/login", login);
 router.get("/logout", logout);
 router.post("/forgotPassword", forgotPassword);
-router.post("/resetPassword",auth, resetPassword);
+router.patch("/resetPassword",auth, resetPassword);
 
 
 router.post("/sellItem", auth, isSeller,sellItem);
-router.post("/deleteItem/:id", auth, isSeller, deleteItem);
-router.post("/updateItem/:id", auth, isSeller, updateItem);
+router.delete("/deleteItem/:id", auth, isSeller, deleteItem);
+router.patch("/updateItem/:id", auth, isSeller, updateItem);
 
 router.get("/Profile", auth, Profile);
-router.post("/updateProfile", auth, updateProfile);
-router.post("/deleteProfile", auth, deleteProfile);
+router.patch("/updateProfile", auth, updateProfile);
+router.delete("/deleteProfile", auth, deleteProfile);
 
 
 router.get("/listItem", listItem);
