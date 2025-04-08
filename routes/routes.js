@@ -12,7 +12,7 @@ router.post("/signin", signin);
 router.post("/otpverification", otpverification);
 router.post("/sendOtp", sendOtp);
 router.post("/login", login);
-router.post("/logout", logout);
+router.get("/logout", logout);
 router.post("/forgotPassword", forgotPassword);
 router.post("/resetPassword",auth, resetPassword);
 
