@@ -1,17 +1,7 @@
 // seller: sell-item, delete-item, edit-item, view-item
 const item = require("../model/item");
-const cloudinary = require("cloudinary").v2;
 const User = require("../model/user")
-
-async function UploadCloudinary(file, folder, quality) {
-  const options = { folder };
-  if (quality) {
-    options.quality = quality;
-  }
-  options.resource_type = "auto";
-
-  return await cloudinary.uploader.upload(file.tempFilePath, options);
-}
+const UploadCloudinary = require("../utils/cloudinaryUpload");
 
 exports.sellItem= async(req,res)=>{
    try{
@@ -226,7 +216,7 @@ exports.listItem = async (req, res) => {
     const limitNumber = parseInt(limit);
     const skip = (pageNumber - 1) * limitNumber;
 
-    const response = await item.find(filter).sort({title:sortOrder , price:sortOrder}).skip(skip).limit(limitNumber);
+    const response = await item.find(filter).sort({price:sortOrder}).skip(skip).limit(limitNumber);
     console.log(response);
 
     // const totalItems = await item.countDocuments(filter);

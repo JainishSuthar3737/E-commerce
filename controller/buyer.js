@@ -143,6 +143,7 @@ exports.addToWish = async (req, res) => {
 exports.likeItem = async (req, res) => {
   try {
     const userId = req.user.id;
+    console.log("user",userId);
     if (!userId) {
       return res.status(400).json({
         success: false,
@@ -159,13 +160,21 @@ exports.likeItem = async (req, res) => {
       });
     }
 
-    const response = await item.findById(id).select("-password -otp -otpCreatedAt");
+    const response = await item.findById(id);
+    console.log(response._id);
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { $addToSet: { like: response } }, // Prevent duplicate items
+      { $addToSet: { like: response._id } }, // Prevent duplicate items
       { new: true }
     ).select("-password -otp -otpCreatedAt");
-    updatedUser.password = undefined;
+    console.log(updatedUser);
+    if (!updatedUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Item not liked",
+      });
+    }
+ 
 
     if (!response) {
       return res.status(404).json({

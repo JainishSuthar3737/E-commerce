@@ -83,7 +83,7 @@ exports.otpverification = async (req, res) => {
   try {
     const { email, otp } = req.body;
 
-    const user = await userschema.findOne({ email }).select("-password");
+    const user = await userschema.findOne({ email }).select("name email role otp");
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -284,7 +284,7 @@ exports.logout = (req, res) => {
 
 exports.forgotPassword = async (req, res) => {
   try {
-    //here to send otp usinf resend otp function and otpverification function
+    //here to send otp using resend otp function and otpverification function
     const { email, otp, password } = req.body;
     if (!email || !password || !otp) {
       return res.status(400).json({
@@ -294,7 +294,7 @@ exports.forgotPassword = async (req, res) => {
     }
     
 
-    const user = await userschema.findOne({ email }).select("-password");
+    const user = await userschema.findOne({ email })
     
     if (!user) {
       return res.status(400).json({
@@ -332,6 +332,13 @@ exports.forgotPassword = async (req, res) => {
     }
 
     const changePassword = await userschema.findByIdAndUpdate({ _id: user.id }, { password: hashedpassword });
+
+    if (!changePassword) {
+       return res.status(400).json({
+         success: false,
+         message: "password is not changed ",
+       }); 
+    }
 
     return res.status(200).json({
       success: true,
