@@ -1,1 +1,0 @@
-console.log(new Integer(8))
