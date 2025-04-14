@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const nodemailer = require("nodemailer");
+
 require("dotenv").config();
 const userSchema = new mongoose.Schema({
   name: {
