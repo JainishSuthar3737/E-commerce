@@ -4,7 +4,7 @@ require("dotenv").config();
 
 const SendMail = async (email, message, subject) => {
   try {
-    const user = await userschema.findOne({ email });
+    
     const transporter = nodemailer.createTransport({
       host: process.env.MAIL_HOST,
       auth: {
@@ -25,10 +25,7 @@ const SendMail = async (email, message, subject) => {
   } catch (error) {
     console.log(error);
 
-    return res.status(500).json({
-      success: false,
-      message: "Server Error",
-    });
+   
   }
 };
 
